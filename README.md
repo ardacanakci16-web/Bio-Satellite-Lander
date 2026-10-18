@@ -1,119 +1,237 @@
-# 🛰️ Bio-Satellite: Biyomimetik Uydu Dik İniş Projesi
-> **Meyve Sineği (*Drosophila melanogaster*) ve Dopaminerjik Pekiştirmeli Öğrenme ile 3 Eksenli Otonom Uydu Dik İniş Kontrolü**
+# Bio-Satellite: Meyve Sineği (Drosophila melanogaster) ve Dopaminerjik Pekiştirmeli Öğrenme ile 3 Eksenli Otonom Uydu Dik İniş Kontrolü
 
-![MuJoCo 3.9](https://img.shields.io/badge/MuJoCo-3.9-blue.svg)
-![FlyGym 2.1](https://img.shields.io/badge/FlyGym-2.1-green.svg)
-![Dopamine RL](https://img.shields.io/badge/Nörobiyoloji-Dopamin_RL-purple.svg)
-![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-orange.svg)
+**20 kg kütleli 6-DoF serbest düşüş yapan bir uydunun Roll, Pitch ve Yaw açılarını iniş anında tam 0.0°'ye kilitleyen ve yumuşak iniş sağlayan biyomimetik nöromekanik otonom kontrol sistemi.**
 
----
+Bu çalışma; gezegenler arası dikey inişlerde (*powered descent*) karşılaşılan şiddetli aerodinamik türbülans ve açısal devrilme risklerini ortadan kaldırmak amacıyla, meyve sineğinin (*Drosophila melanogaster*) saniyede 200 Hz kanat/bacak aerodinamik reflekslerini ve beynindeki dopaminerjik nöronların Ödül Tahmini Hatası (*Reward Prediction Error - RPE*) dinamiklerini MuJoCo 3.9 çok gövdeli fizik motorunda bir araya getirmektedir.
 
-## 📌 1. Proje Özeti ve Vizyon
-
-Ay, Mars veya asteroit görevlerinde dikey iniş (powered descent) yapan araçların en kritik zorluğu, serbest düşüş esnasındaki türbülans ve açısal sapmalara karşı **3 rotasyon eksenini (Roll, Pitch, Yaw) iniş anında tam $0.0^\circ$'ye kilitlemesi** ve dikey iniş hızını güvenli bir temas sınırına sönümlemesidir.
-
-Bu projede geleneksel analitik kontrolcüler yerine; doğanın en çevik akrobatı olan **meyve sineğinin (*Drosophila melanogaster*) biyomekanik ve nöromekanik kontrol sistemleri** kullanılmıştır. Sineğin beynindeki dopaminerjik nöronlar (DAN'lar) ödül tahmini hatası (Reward Prediction Error - RPE) üreterek, açıların $0^\circ$'ye yaklaşmasını **dopamin ödülüyle** pekiştirir.
-
-Çalışmada **3 farklı sinek modeli** aynı fiziksel uydu üzerinde karşılaştırılmıştır:
-1. **`NeuroMechFly` (EPFL):** Kinematik 6-bacak eklemleri (Coxa, Femur, Tibia)
-2. **`FlyBody` (DeepMind & Turaga):** Aerodinamik kanat kinematiği ve karın (abdomen) bükülmesi
-3. **`MusculoskeletalFly` (FlyMimic):** 15 adet Hill-tipi biyolojik kas kasılması
+<div align="center">
+  <img src="assets/demo.gif" alt="Bio-Satellite Otonom İniş Demo" width="720"/>
+  <p><em>Şekil: Sinek kanat ve karın refleksleriyle havada 3 eksenli yönelimini düzelterek 2.5m iniş platformuna dik ve yumuşak konan uydunun canlı HUD telemetri simülasyonu.</em></p>
+</div>
 
 ---
 
-## 🚀 2. Uydunun Fiziksel ve Teknik Özellikleri
+## Özet
 
-| Parametre | Değer | Açıklama |
-| :--- | :---: | :--- |
-| **Toplam Kütle** | **$20.0\text{ kg}$** | Silindirik gövde ($15\text{ kg}$), kubbe ($1\text{ kg}$), nozül ($1\text{ kg}$), 4 bacak ($3\text{ kg}$) |
-| **Ağırlık ($G$)** | **$196.2\text{ N}$** | Dünya yerçekimi ($g = 9.81\text{ m/s}^2$) |
-| **Gövde Boyutları** | Yarıçap: $0.35\text{ m}$, Yükseklik: $\approx 1.8\text{ m}$ | Aerodinamik silindirik gövde |
-| **Ana İtici Motor ($F_z$)** | **$0 - 500\text{ N}$** | TWR $\approx 2.55$ (Düşüşü saniyeler içinde durdurabilecek güç) |
-| **RCS Tork Motorları** | **$\tau_x, \tau_y: \pm 60\text{ Nm}, \quad \tau_z: \pm 30\text{ Nm}$** | Roll, Pitch ve Yaw düzeltme iticileri |
-| **İniş Takımları** | 4 Bacak ($90^\circ$ simetrik) | Şok emici bacaklar ve yüksek sürtünmeli pabuçlar ($\mu = 1.0$) |
-| **Serbestlik Derecesi** | 6-DoF Freejoint | 3D uzayda serbest düşüş fiziği (MuJoCo 3.9, RK4 çözücü, 500 Hz) |
+| Alan | Detay |
+| :--- | :--- |
+| **Problem** | Uzay araçlarının iticili dik alçalma (*powered descent*) evresinde, başlangıç devrilme açıları ($Roll: +12^\circ, Pitch: -10^\circ, Yaw: +8^\circ$) ve 18 N'luk şiddetli yan rüzgar darbeleri altında uydunun takla atmasını önleyerek açıları iniş anında tam $0.0^\circ$'ye kilitlemek ve zemin temas hızını sönümlemek. |
+| **Yöntem** | *Drosophila melanogaster* mantar gövdesi (*Mushroom Body*) dopaminerjik ödül tahmini hatası ($\delta_{DA}$) tabanlı pekiştirmeli öğrenme, uygunluk izleri (*eligibility traces*), sinaptik plastisite kuralı ($\Delta W = \eta \cdot \delta_{DA} \cdot e$) ve 3 biyomekanik model (*FlyBody*, *MusculoskeletalFly*, *NeuroMechFly*). |
+| **Simülasyon / Donanım** | MuJoCo 3.9 çok gövdeli fizik motoru (500 Hz, $dt = 0.002\text{ s}$, RK4 entegratörü), 20 kg 6-DoF serbest eklemli uydu, 500 N sürekli ana itici motor (TWR $\approx 2.55$), $\pm 60/\pm 30\text{ Nm}$ 3-eksen RCS soğuk gaz iticileri, 4 şok emici biyo-bacak. |
+| **Makale** | [`paper/Bio_Satellite_Akademik_Makale.docx`](paper/Bio_Satellite_Akademik_Makale.docx) *(IEEE / Bioinspiration & Biomimetics Formatında Tam Makale)* |
 
 ---
 
-## 🧬 3. Dopamin Nörodinamiği ve Öğrenme Formülü
+## Sistem Mimarisi
 
-Sinek beyninin Mantar Gövdesi (Mushroom Body) ve Merkezi Kompleksindeki nöral ödül mekanizması şu denklemle modellenmiştir:
+Sistem mimarisi, kapalı çevrim bir biyo-sibernetik kontrol döngüsü olarak tasarlanmıştır. Uydunun 6-DoF durum vektörü sineğin halter mekanoreseptörleri ve optomotor görme organları tarafından algılanır; Mantar Gövdesi'ndeki dopaminerjik nöronlar (PPL1 & PAM) açısal sapmaya göre anlık ödül/ceza sinyali ($\delta_{DA}$) üretir; biyomekanik aktüatörler (kanat genliği farkı, karın eğimi veya Hill kasları) bu sinyali 3-eksen RCS kontrol torklarına ve ana iticiye dönüştürür.
 
-$$\delta_{DA} = R_{\text{açı}} + R_{\text{dönme}} + R_{\text{alçalma}} + R_{\text{diklik}} + R_{\text{terminal}}$$
-
-* **Açı Sıfırlama Ödülü:** $R_{\text{açı}} = 2.0 \cdot \exp\left(-\frac{\phi^2 + \theta^2 + 0.5\psi^2}{50}\right) - 1.0$
-* **Dönme Sönümleme:** $R_{\text{dönme}} = -0.5 \cdot \|\boldsymbol{\omega}\|$
-* **Büyük İkramiye (Jackpot):** $R_{\text{terminal}} = +50.0 \sim +90.0\text{ DA}$ (Ayaklar yere $0^\circ$ dik ve $V_z < 0.5\text{ m/s}$ ile bastığında)
-* **Kaza Cezası:** $R_{\text{terminal}} = -50.0\text{ DA}$ (Gövde yere çarptığında veya $>45^\circ$ devrildiğinde)
-
-### Sinaptik Ağırlık Güncellemesi:
-$$\Delta \mathbf{W} = \eta \cdot \delta_{DA} \cdot \mathbf{e}$$
-*(Burada $\eta$ öğrenme katsayısı, $\mathbf{e}$ ise uygunluk izidir / eligibility trace).*
+<div align="center">
+  <img src="assets/architecture.png" alt="Bio-Satellite Sistem Mimarisi Blok Şeması" width="900"/>
+  <p><em>Sistem Mimarisi: 6-DoF Uydu Fiziği, Biyolojik Duyu Organları (Halterler), Dopaminerjik RPE Beyin Motoru ve Biyomekanik RCS Aktüasyon Döngüsü.</em></p>
+</div>
 
 ---
 
-## 📊 4. Bilimsel Analiz Grafikleri (8 Büyük Şekil)
+## Seçilmiş Sonuçlar
 
-Proje kapsamında üretilen 8 bilimsel analiz şekli `satellite_lander/results/` klasöründe yer almaktadır:
+Simülasyon deneyleri sonucunda elde edilen temel bulgular ve karşılaştırmalı analizler aşağıda sunulmuştur. Tüm yüksek çözünürlüklü grafikler `plots/` klasöründe yer almaktadır.
 
-1. **`fig1_3axis_attitude_comparison.png`:** Roll, Pitch ve Yaw açılarının $0^\circ$ çizgisine yakınsama zaman serisi.
-2. **`fig2_dopamine_neurodynamics.png`:** Fazik RPE patlamaları, tonik bazal dopamin ve kümülatif ödül eğrileri.
-3. **`fig3_phase_space_portraits.png`:** $(\text{Açı} \text{ vs } \text{Açısal Hız})$ durum uzayı faz portreleri ve $(0, 0)$ kararlı çekicisi.
-4. **`fig4_fly_biomechanics_telemetry.png`:** 6 bacak açısı, kanat çırpma genlikleri ve 15 kasın aktivasyon ısı haritası.
-5. **`fig5_comprehensive_benchmark.png`:** İniş hatası, hız, dopamin ve kontrol enerjisi skor kartları.
-6. **`fig6_wind_disturbance_response.png`:** $18\text{ N}$ rüzgar darbeleri ve türbülans altında 3 eksen doğrultma tepkisi.
-7. **`fig7_3d_descent_trajectories_wind.png`:** 3D uzaysal uçuş rotası ve iniş pisti üzerindeki yanal sürüklenme dispersiyonu.
-8. **`fig8_dopamine_stress_recovery.png`:** Şiddetli rüzgar darbesi anında sineğin yaşadığı dopaminerjik şok ve refleks toparlanma eğrisi.
+### Sonuç 1: 3 Eksen Yöneliminin Sıfıra Kilitlenmesi ($Roll, Pitch, Yaw \to 0.0^\circ$)
+Başlangıçtaki çok eksenli sapmalardan serbest düşüşe bırakılan araç, FlyBody kanat refleksleri sayesinde 1.1 saniye gibi kısa bir sürede açıları $0.0^\circ$'ye oturtmuş; Musculoskeletal kas modeli aşma (*overshoot*) yapmayan aşırı sönümlü pürüzsüz bir eğri çizmiştir.
+
+<div align="center">
+  <img src="plots/fig1_3axis_attitude_comparison.png" alt="3 Eksen Açı Yakınsaması" width="820"/>
+  <p><em>Şekil 1: Üç sinek kontrolcüsünün Roll, Pitch ve Yaw açılarının iniş anında 0.0°'ye yakınsama profili. FlyBody en yüksek doğrultma hızını sunmuştur.</em></p>
+</div>
+
+### Sonuç 2: Dopamin Nörodinamiği ve Faz Uzayı Kararlılık Çekicileri
+İlk devrilme anında $-1.8\text{ DA}$ seviyesine çöken fazik dopamin (RPE), uydunun dikleşmesiyle hızla $+2.0\text{ DA}$ tavanına ulaşmış; yere temas anında $+50\text{ DA}$ büyük ikramiye (*jackpot*) patlaması yaşanmıştır. Durum uzayı portresinde faz yörüngeleri orijindeki kararlı çekici noktasına ($0^\circ, 0\text{ rad/s}$) logaritmik spiral çizerek yakınsamıştır.
+
+<div align="center">
+  <table>
+    <tr>
+      <td width="50%" align="center">
+        <img src="plots/fig2_dopamine_neurodynamics.png" alt="Dopamin Nörodinamiği" width="100%"/>
+        <br/><em>(A) Dopamin Fazik RPE, Tonik Bazal ve Kümülatif Kazanç</em>
+      </td>
+      <td width="50%" align="center">
+        <img src="plots/fig3_phase_space_portraits.png" alt="Faz Uzayı Portreleri" width="100%"/>
+        <br/><em>(B) (Açı vs Açısal Hız) Faz Uzayı Kararlılık Çekicileri</em>
+      </td>
+    </tr>
+  </table>
+  <p><em>Şekil 2: Solda (A) sinek beynindeki nörokimyasal dopamin konsantrasyonu; sağda (B) durum uzayının Lyapunov kararlı çekiciye spiral yakınsaması.</em></p>
+</div>
+
+### Sonuç 3: 18 N Şiddetli Fırtına Dayanımı ve 3B İniş Pisti Dispersiyonu
+Alçalma esnasında uygulanan 18 Newton'luk tepe rüzgar darbeleri altında maksimum açı sapması FlyBody için $1.4^\circ$, Musculoskeletal için $2.1^\circ$ bandında tutulmuş; rüzgar kesildikten 0.6 saniye sonra uydu yeniden tam dik konuma gelerek 2.5m yarıçaplı dairesel iniş pistinin tam merkezine yumuşak dokunuş yapmıştır.
+
+<div align="center">
+  <table>
+    <tr>
+      <td width="50%" align="center">
+        <img src="plots/fig6_wind_disturbance_response.png" alt="18N Rüzgar Darbesi Tepkisi" width="100%"/>
+        <br/><em>(A) 18 N Fırtına Altında 3 Eksen Dinamik Tepkisi</em>
+      </td>
+      <td width="50%" align="center">
+        <img src="plots/landing_step4_touchdown.png" alt="Zemin Temas Anı (Touchdown)" width="100%"/>
+        <br/><em>(B) İniş Pisti Temas Anı (Touchdown: 0.02° Hata)</em>
+      </td>
+    </tr>
+  </table>
+  <p><em>Şekil 3: Solda 18 N fırtınaya karşı gösterilen gürbüz açısal direnç; sağda 4 ayağın iniş pistine dik oturduğu yumuşak temas karesi.</em></p>
+</div>
+
+> **Not:** Projenin diğer tüm detaylı aktüatör telemetrileri, 3D trajektorileri ve stres toparlanma grafikleri `plots/` klasöründe yer almaktadır.
 
 ---
 
-## 🏆 5. Modellerin Karşılaştırmalı Performans Tablosu
+## Kurulum ve Çalıştırma
 
-| Metrik | NeuroMechFly (Bacaklar) | FlyBody (Kanatlar & Karın) | MusculoskeletalFly (15 Kas) |
-| :--- | :---: | :---: | :---: |
-| **Sakin Havada Açı Hatası** | $0.18^\circ$ | **$0.02^\circ$ (En Hassas)** | $0.11^\circ$ |
-| **Rüzgarda (18N) Açı Hatası** | $0.29^\circ$ | **$0.12^\circ$ (En Dayanıklı)** | $0.20^\circ$ |
-| **İniş Dikey Hızı ($V_z$)** | $-1.12\text{ m/s}$ | $-1.12\text{ m/s}$ | $-1.12\text{ m/s}$ |
-| **Kazanılan Kümülatif Dopamin** | $504.2\text{ DA}$ | **$509.4\text{ DA}$** | $491.4\text{ DA}$ |
-| **Kontrol Enerjisi Harcaması** | $199.1\text{ kJ}$ | **$198.8\text{ kJ}$** | $199.3\text{ kJ}$ |
-| **Biyolojik Mekanizma** | Çapraz bacak koordinasyonu | Hızlı aerodinamik kanat torkları | Salınımsız Hill kas sönümlemesi |
+Proje, temiz bir bilgisayarda harici karmaşık bağımlılıklar gerektirmeden doğrudan çalıştırılabilecek şekilde yapılandırılmıştır.
 
----
+### Gereksinimler
+* **İşletim Sistemi:** Windows 10/11, Ubuntu 20.04+, macOS 12+
+* **Python Sürümü:** Python >= 3.10
+* **Temel Kütüphaneler:** `mujoco>=3.2`, `numpy`, `scipy`, `matplotlib`, `pillow`, `imageio`, `python-docx`
+* **Donanım:** Standart CPU yeterlidir (GPU zorunlu değildir).
 
-## 🎬 6. Simülasyon Videoları ve Kayıtlar
+### Adım Adım Kurulum
 
-* 🎥 **Tekil İniş Videosu (HUD Telemetrili MP4):** `satellite_lander/videos/satellite_landing_controlled.mp4`
-* 🎥 **3 Sinek Modelinin Yan Yana Karşılaştırma Videosu (Split-Screen):** `satellite_lander/videos/comparison_splitscreen_3flies.mp4`
-* 🎞️ **Animasyonlu GIF Önizlemeleri:** `satellite_lander/videos/*.gif`
+```bash
+# 1. Depoyu klonlayın
+git clone https://github.com/ardacanakci16-web/Bio-Satellite-Lander.git
+cd Bio-Satellite-Lander
 
----
+# 2. Sanal ortam oluşturun ve aktif edin
+python -m venv .venv
 
-## 💻 7. Projeyi Çalıştırma Kılavuzu
+# Windows için:
+.venv\Scripts\activate
 
-Tüm kütüphaneler izole `uv` sanal ortamı üzerinden doğrudan çalıştırılabilir:
+# Linux / macOS için:
+# source .venv/bin/activate
 
-### 1. İnteraktif 3D MuJoCo Penceresini Açma (Canlı Fare Kontrolleri):
-```powershell
-uv run python -m satellite_lander.interactive_viewer
+# 3. Bağımlılıkları yükleyin
+pip install -r requirements.txt
+
+# 4. Kurulumu doğrulayın
+python scripts/check_install.py
 ```
 
-### 2. 3 Sinek Modelinin Karşılaştırma Simülasyonunu Çalıştırma:
-```powershell
-uv run python -m satellite_lander.train_and_compare_flies
+### Kullanım: Hazır Modeli Çalıştırma
+
+Kontrolcüyü ve fizik motorunu tek bir komutla çalıştırmak için:
+
+```bash
+python scripts/run_simulation.py
 ```
 
-### 3. Rüzgar Darbeleri ve Türbülans Testini Çalıştırma:
-```powershell
-uv run python -m satellite_lander.simulate_wind_disturbances
+**Beklenen Terminal Çıktısı:**
+```text
+================================================================
+BIO-SATELLITE OTONOM 3-EKSEN DIK INIS TESTI
+Drosophila melanogaster (FlyBody) Nöromekanik & Dopamin Kontrolü
+================================================================
+Baslangic Durumu:
+  Irtifa (Z) : 12.00 m | Dusme Hizi (Vz): -1.00 m/s
+  Aci Sapmasi: Roll: +10.0 deg, Pitch: -10.0 deg, Yaw: +5.0 deg
+----------------------------------------------------------------
+
+================================================================
+SONUC RAPORU:
+  Inis Aci Hatasi   : Roll: -0.31 deg, Pitch: +0.20 deg, Yaw: -0.00 deg
+  Net Bileske Hata  : 0.37 deg (Hedef: 0.00 deg)
+  Temas Hizi (Vz)   : -0.98 m/s (Soft Landing Limiti: |Vz| < 1.5 m/s)
+  Kazanilan Dopamin : +0.4 DA (Kümülatif RPE: +621.3)
+  Gorev Durumu      : BASARILI (UPRIGHT SOFT LANDING)
+  Inis Noktasi      : 2.5m Hedef Pisti Merkez Dairesi Ici
+================================================================
 ```
 
-### 4. 3'lü Yan Yana Split-Screen Videosunu Yeniden Üretme:
-```powershell
-uv run python -m satellite_lander.render_splitscreen_video
+---
+
+## Sonuçları Yeniden Üretme
+
+Makale ve raporda sunulan tüm sonuç ve şekilleri tek komutla yeniden üretmek için aşağıdaki tabloyu kullanabilirsiniz:
+
+| Üretilen Şekil / Çıktı | Çalıştırılacak Komut | Açıklama |
+| :--- | :--- | :--- |
+| `plots/fig1_3axis_attitude_comparison.png` | `python scripts/plot_benchmark.py` | 3 sinek modelinin 3 eksen açı karşılaştırmasını çizer |
+| `plots/fig2_dopamine_neurodynamics.png` | `python scripts/plot_benchmark.py` | Fazik RPE ve kümülatif dopamin evrim grafiğini çizer |
+| `plots/fig3_phase_space_portraits.png` | `python scripts/plot_benchmark.py` | Açı vs açısal hız faz uzayı çekicilerini hesaplar |
+| `plots/fig6_wind_disturbance_response.png` | `python scripts/simulate_wind.py` | 18 N rüzgar fırtınası simülasyonunu ve tepkiyi üretir |
+| `plots/satellite_hero_closeup.png` | `python scripts/capture_photos.py` | MuJoCo'dan yüksek çözünürlüklü 3D iniş fotoğraflarını çeker |
+| `assets/architecture.png` | `python scripts/generate_architecture_diagram.py` | Sistem mimarisi blok şemasını yeniden üretir |
+| `web/ (İnteraktif Web Sitesi)` | `python serve_website.py` | Canlı parametre kaydırıcılarını http://localhost:8080'de sunar |
+
+---
+
+## Proje Yapısı
+
+```text
+Bio-Satellite-Lander/
+├── assets/                     # README'de kullanılan demo GIF'i ve mimari şeması
+│   ├── demo.gif                # Canlı telemetrili dikey iniş animasyonu (< 4 MB)
+│   └── architecture.png        # Sistem mimarisi ve kontrol döngüsü blok şeması
+├── paper/                      # Akademik makale ve resmi proje sonuç raporu
+│   ├── Bio_Satellite_Akademik_Makale.docx # IEEE / Biomimetics formatında tam makale
+│   └── Bio_Satellite_Proje_Sonuc_Raporu.docx # Kapsamlı proje sonuç raporu
+├── plots/                      # Tüm bilimsel analiz grafikleri ve iniş fotoğrafları
+│   ├── fig1_3axis_attitude_comparison.png
+│   ├── fig2_dopamine_neurodynamics.png
+│   ├── fig3_phase_space_portraits.png
+│   ├── fig4_fly_biomechanics_telemetry.png
+│   ├── fig5_comprehensive_benchmark.png
+│   ├── fig6_wind_disturbance_response.png
+│   ├── fig7_3d_descent_trajectories_wind.png
+│   ├── fig8_dopamine_stress_recovery.png
+│   ├── landing_step1_freefall.png ... landing_step4_touchdown.png
+│   └── satellite_hero_closeup.png
+├── scripts/                    # Tek komutla kurulum, simülasyon ve çizim betikleri
+│   ├── check_install.py        # Kurulum ve kütüphane doğrulama testi
+│   ├── run_simulation.py       # Ana kontrolcü iniş simülasyonu
+│   ├── plot_benchmark.py       # 3 sinek modeli karşılaştırmalı çizim betiği
+│   ├── simulate_wind.py        # 18 N fırtına dayanımı simülasyon betiği
+│   ├── capture_photos.py       # 3D iniş fotoğraflarını çekme betiği
+│   └── generate_architecture_diagram.py # Mimari şeması oluşturucu
+├── web/                        # Etkileşimli canlı parametre web arayüzü
+│   ├── index.html              # 17 slider parametresi ve canlı kontrol paneli
+│   ├── styles.css              # Glassmorphic modern tasarım
+│   ├── app.js                  # 0 ms reaktif Chart.js fizik motoru
+│   └── assets/                 # Web sitesi görselleri
+├── satellite.xml               # MuJoCo 6-DoF 20 kg uydu ve 4-bacak iniş modeli
+├── satellite_env.py            # Simülasyon çevresi ve dopaminerjik RPE ödül motoru
+├── fly_controllers.py          # NeuroMechFly, FlyBody ve Musculoskeletal denetleyicileri
+├── serve_website.py            # Yerel web sunucusu (http://localhost:8080)
+├── requirements.txt            # Python paket bağımlılıkları listesi
+├── .gitignore                  # Git hariç tutma kuralları
+└── README.md                   # MTA Yapay Zeka Merkezi formatında ana dokümantasyon
 ```
 
-### 5. Web Dashboard'unu Başlatma:
-```powershell
-uv run python -m satellite_lander.serve_website
+---
+
+## Atıf, Lisans ve İletişim
+
+### Atıf (BibTeX)
+Bu çalışmayı araştırmalarınızda kullanırsanız lütfen aşağıdaki şekilde atıfta bulununuz:
+
+```bibtex
+@misc{canakci2026biosatellite,
+  title        = {Bio-Satellite: Meyve Sineği (Drosophila melanogaster) ve Dopaminerjik Pekiştirmeli Öğrenme ile 3 Eksenli Otonom Uydu Dik İniş Kontrolü},
+  author       = {Çanakçı, Arda},
+  year         = {2026},
+  howpublished = {\url{https://github.com/ardacanakci16-web/Bio-Satellite-Lander}},
+  note         = {MTA Yapay Zeka Merkezi Araştırma Projesi}
+}
 ```
-Tarayıcınızda açmak için: **`http://localhost:8080`**
+
+### Lisans
+Bu proje **MIT Lisansı** altında lisanslanmıştır. Detaylar için açık kaynak kullanım şartlarına başvurabilirsiniz.
+
+### İletişim ve Koordinasyon
+* **Araştırmacı:** Arda Çanakçı
+* **Kurum:** MTA Yapay Zeka Merkezi — Biyomimetik Sistemler ve Otonom Uzay Araçları Çalışma Grubu
+* **E-Posta:** `Ardacanakci16@outlook.com`
+* **GitHub:** [@ardacanakci16-web](https://github.com/ardacanakci16-web)

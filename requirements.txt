@@ -1,0 +1,10 @@
+# Bio-Satellite Autonomous Lander Requirements
+# Python >= 3.10 required
+mujoco>=3.2.0
+numpy>=1.24.0
+scipy>=1.10.0
+matplotlib>=3.7.0
+pillow>=9.5.0
+imageio>=2.30.0
+imageio-ffmpeg>=0.4.8
+python-docx>=1.1.0
