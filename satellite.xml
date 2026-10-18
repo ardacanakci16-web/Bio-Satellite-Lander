@@ -1,0 +1,102 @@
+<mujoco model="satellite_lander">
+    <compiler angle="degree" coordinate="local" inertiafromgeom="true"/>
+
+    <option gravity="0 0 -9.81" integrator="RK4" timestep="0.002">
+        <flag contact="enable"/>
+    </option>
+
+    <visual>
+        <global offwidth="1920" offheight="1080"/>
+        <headlight ambient="0.4 0.4 0.4" diffuse="0.8 0.8 0.8" specular="0.1 0.1 0.1"/>
+        <rgba haze="0.15 0.25 0.35 1"/>
+    </visual>
+
+    <asset>
+        <!-- Textures & Materials -->
+        <texture type="skybox" builtin="gradient" rgb1="0.05 0.05 0.15" rgb2="0.0 0.0 0.02" width="512" height="512"/>
+        <texture name="grid_tex" type="2d" builtin="checker" rgb1="0.2 0.2 0.25" rgb2="0.3 0.3 0.35" width="512" height="512"/>
+        <material name="ground_mat" texture="grid_tex" texrepeat="20 20" reflectance="0.1"/>
+        
+        <texture name="pad_tex" type="2d" builtin="checker" rgb1="0.8 0.6 0.1" rgb2="0.1 0.1 0.1" width="256" height="256"/>
+        <material name="pad_mat" texture="pad_tex" texrepeat="5 5" reflectance="0.2"/>
+
+        <material name="hull_mat" rgba="0.9 0.9 0.95 1" specular="0.8" shininess="0.5"/>
+        <material name="dark_mat" rgba="0.2 0.2 0.25 1" specular="0.4" shininess="0.3"/>
+        <material name="leg_mat" rgba="0.8 0.5 0.1 1" specular="0.6" shininess="0.4"/>
+        <material name="pad_foot_mat" rgba="0.3 0.8 0.3 1" specular="0.3"/>
+    </asset>
+
+    <worldbody>
+        <!-- Ground and Landing Pad -->
+        <geom name="ground" type="plane" size="50 50 1" material="ground_mat" contype="1" conaffinity="1" friction="1.0 0.005 0.0001"/>
+        <geom name="landing_target" type="cylinder" pos="0 0 0.01" size="2.5 0.01" material="pad_mat" contype="0" conaffinity="0"/>
+
+        <!-- Lighting -->
+        <light directional="true" pos="5 5 15" dir="-0.3 -0.3 -1" diffuse="0.8 0.8 0.8"/>
+        <light directional="false" pos="0 0 10" diffuse="0.4 0.4 0.4"/>
+
+        <!-- External Cameras -->
+        <camera name="tracking_cam" mode="trackcom" pos="0 -8 4" xyaxes="1 0 0 0 0.5 1"/>
+        <camera name="side_view" mode="fixed" pos="0 -10 3" xyaxes="1 0 0 0 0.3 1"/>
+        <camera name="top_view" mode="fixed" pos="0 0 15" xyaxes="1 0 0 0 1 0"/>
+
+        <!-- Satellite Lander Body (Free 6-DOF Body) -->
+        <body name="satellite" pos="0 0 8">
+            <freejoint name="root"/>
+
+            <!-- Center of Mass Site -->
+            <site name="com_site" pos="0 0 0" size="0.05" rgba="1 0 0 0.8"/>
+
+            <!-- Main Hull (Cylinder) -->
+            <geom name="hull_body" type="cylinder" size="0.35 0.75" pos="0 0 0" material="hull_mat" mass="15" contype="1" conaffinity="1"/>
+            <geom name="hull_top" type="capsule" fromto="0 0 0.75 0 0 0.95" size="0.25" material="dark_mat" mass="2"/>
+            
+            <!-- Sensor / Antenna Dome on Top -->
+            <geom name="avionics_dome" type="sphere" pos="0 0 1.0" size="0.15" rgba="0.2 0.6 1.0 0.9" mass="1"/>
+
+            <!-- Main Engine Nozzle Site at Bottom -->
+            <site name="main_thruster_site" pos="0 0 -0.75" size="0.1" rgba="1 0.5 0 0.9"/>
+            <geom name="engine_bell" type="cylinder" size="0.15 0.1" pos="0 0 -0.8" material="dark_mat" mass="1"/>
+
+            <!-- 4 Landing Legs (Symmetric at 90 degree intervals) -->
+            <!-- Leg 1 (+X) -->
+            <body name="leg1" pos="0.3 0 -0.6">
+                <geom name="leg1_strut" type="capsule" fromto="0 0 0 0.4 0 -0.45" size="0.04" material="leg_mat" mass="0.5"/>
+                <geom name="leg1_foot" type="sphere" pos="0.45 0 -0.48" size="0.08" material="pad_foot_mat" mass="0.2" contype="1" conaffinity="1"/>
+            </body>
+
+            <!-- Leg 2 (-X) -->
+            <body name="leg2" pos="-0.3 0 -0.6">
+                <geom name="leg2_strut" type="capsule" fromto="0 0 0 -0.4 0 -0.45" size="0.04" material="leg_mat" mass="0.5"/>
+                <geom name="leg2_foot" type="sphere" pos="-0.45 0 -0.48" size="0.08" material="pad_foot_mat" mass="0.2" contype="1" conaffinity="1"/>
+            </body>
+
+            <!-- Leg 3 (+Y) -->
+            <body name="leg3" pos="0 0.3 -0.6">
+                <geom name="leg3_strut" type="capsule" fromto="0 0 0 0 0.4 -0.45" size="0.04" material="leg_mat" mass="0.5"/>
+                <geom name="leg3_foot" type="sphere" pos="0 0.45 -0.48" size="0.08" material="pad_foot_mat" mass="0.2" contype="1" conaffinity="1"/>
+            </body>
+
+            <!-- Leg 4 (-Y) -->
+            <body name="leg4" pos="0 -0.3 -0.6">
+                <geom name="leg4_strut" type="capsule" fromto="0 0 0 0 -0.4 -0.45" size="0.04" material="leg_mat" mass="0.5"/>
+                <geom name="leg4_foot" type="sphere" pos="0 -0.45 -0.48" size="0.08" material="pad_foot_mat" mass="0.2" contype="1" conaffinity="1"/>
+            </body>
+        </body>
+    </worldbody>
+
+    <actuator>
+        <!-- Main Thruster: Pushes UP along satellite Z-axis (Max 500 N, satellite ~20 kg = ~196 N gravity) -->
+        <motor name="main_thrust" site="main_thruster_site" gear="0 0 1 0 0 0" ctrllimited="true" ctrlrange="0 500"/>
+
+        <!-- 3-Axis Reaction Control System (RCS) Torques at Center of Mass -->
+        <!-- Roll Torque (Around Body X Axis: Tilts Left / Right) -->
+        <motor name="rcs_roll" site="com_site" gear="0 0 0 1 0 0" ctrllimited="true" ctrlrange="-60 60"/>
+
+        <!-- Pitch Torque (Around Body Y Axis: Tilts Front / Back) -->
+        <motor name="rcs_pitch" site="com_site" gear="0 0 0 0 1 0" ctrllimited="true" ctrlrange="-60 60"/>
+
+        <!-- Yaw Torque (Around Body Z Axis: Spins Clockwise / CCW) -->
+        <motor name="rcs_yaw" site="com_site" gear="0 0 0 0 0 1" ctrllimited="true" ctrlrange="-30 30"/>
+    </actuator>
+</mujoco>

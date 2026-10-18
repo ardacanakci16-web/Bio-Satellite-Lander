@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio-Satellite: Biyomimetik Sinek & Dopamin Uydu İniş Laboratuvarı</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Chart.js for real-time reactive charting -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">🛰️🪰</span>
+                <span class="logo-text">Bio-Satellite <strong>Lab</strong></span>
+            </div>
+            <nav class="nav-links">
+                <a href="#control-lab">⚡ Parametre Laboratuvarı</a>
+                <a href="#live-charts">📈 Canlı Grafik Motoru</a>
+                <a href="#models">3 Sinek Modeli</a>
+                <a href="#scientific-results">Bilimsel Bulgular</a>
+                <a href="#simulation-video">3'lü Video</a>
+            </nav>
+            <div class="nav-badge">Reaktif Simülasyon v2.0</div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="hero-badge">🔬 Etkileşimli Biyomimetik Araştırma Portalı</div>
+            <h1 class="hero-title">
+                Sinek Beyni ve Dopamin ile <br>
+                <span class="gradient-text">Otonom 3 Eksen İniş Laboratuvarı</span>
+            </h1>
+            <p class="hero-subtitle">
+                Aşağıdaki kontrol merkezinden <strong>tüm fiziksel, atmosferik, biyolojik ve dopamin parametrelerini</strong> değiştirin. 
+                Sineklerin iticileri nasıl kontrol ettiğini, açıların 0°'ye nasıl oturduğunu ve tüm grafiklerin 
+                <strong>anlık olarak (0 ms gecikmeyle) nasıl yeniden hesaplandığını</strong> canlı izleyin!
+            </p>
+            <div class="hero-actions">
+                <a href="#control-lab" class="btn btn-primary">🎛️ Parametre Laboratuvarına Git</a>
+                <a href="#live-charts" class="btn btn-secondary">📊 Canlı Grafikleri Görüntüle</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Container -->
+    <main class="container">
+
+        <!-- ============================================================ -->
+        <!-- CANLI PARAMETRE LABORATUVARI (TÜM PARAMETRELERİ YÖNETME) -->
+        <!-- ============================================================ -->
+        <section id="control-lab" class="section">
+            <div class="section-header">
+                <span class="section-tag">CANLI KONTROL MERKEZİ</span>
+                <h2 class="section-title">Parametre Yönetimi ve Canlı Simülasyon</h2>
+                <p class="section-desc">Herhangi bir parametreyi değiştirdiğiniz anda tüm yörüngeler, dopamin yanıtı ve grafikler anında yeniden simüle edilir.</p>
+            </div>
+
+            <!-- Hızlı Senaryo / Preset Butonları -->
+            <div class="presets-bar glass-card">
+                <span class="presets-title">⚡ Hızlı Görev Senaryoları:</span>
+                <div class="presets-buttons">
+                    <button class="preset-btn active" data-preset="nominal">🎯 Dünya Standart İniş</button>
+                    <button class="preset-btn" data-preset="severe_gust">🌪️ Şiddetli Fırtına (22N Rüzgar)</button>
+                    <button class="preset-btn" data-preset="moon_mission">🌑 Ay Görevi (1/6 G Yerçekimi)</button>
+                    <button class="preset-btn" data-preset="mars_mission">🔴 Mars Görevi (Düşük Basınç)</button>
+                    <button class="preset-btn" data-preset="critical_tilt">⚠️ Kritik Takla Sapması (+35° Roll)</button>
+                </div>
+            </div>
+
+            <!-- Parametre Kontrol Grid'i (4 Kategori) -->
+            <div class="parameters-grid">
+
+                <!-- 1. Uçuş ve Başlangıç Koşulları -->
+                <div class="param-card glass-card">
+                    <div class="param-card-header">
+                        <span class="param-icon">🚀</span>
+                        <h3>1. Uçuş & Başlangıç Sapmaları</h3>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="label-wrap">
+                            <span>Başlangıç İrtifası ($Z_0$):</span>
+                            <span id="txtAlt" class="val-badge">12.0 m</span>
+                        </div>
+                        <input type="range" id="paramAlt" min="5" max="25" step="0.5" value="12">
+                    </div>
+
+                    <div class="control-row">
+                        <div class="label-wrap">
+                            <span>Dikey Düşüş Hızı ($V_{z0}$):</span>
+                            <span id="txtVz" class="val-badge">-1.2 m/s</span>
+                        </div>
+                        <input type="range" id="paramVz" min="-4.0" max="0.0" step="0.1" value="-1.2">
+                    </div>
+
+                    <div class="control-row">
+                        <div class="label-wrap">
+                            <span>Başlangıç Roll Açısı ($\phi_0$):</span>
+                            <span id="txtRoll" class="val-badge">+12.0°</span>
+                        </div>
+                        <input type="range" id="paramRoll" min="-45" max="45" step="0.5" value="12">
+                    </div>
+
+                    <div class="control-row">
+                        <div class="label-wrap">
+                            <span>Başlangıç Pitch Açısı ($\theta_0$):</span>
+                            <span id="txtPitch" class="val-badge">-10.0°</span>
+                        </div>
+                        <input type="range" id="paramPitch" min="-45" max="45" step="0.5" value="-10">
+                    </div>
+
+                    <div class="control-row">
+                        <div class="label-wrap">
+                            <span>Başlangıç Yaw Açısı ($\psi_0$):</span>
+                            <span id="txtYaw" class="val-badge">+8.0°</span>
+                        </div>
+                        <input type="range" id="paramYaw" min="-45" max="45" step="0.5" value="8">
+                    </div>
+                </div>
+
+                <!-- 2. Çevre ve Atmosfer Koşulları -->
+                <div class="param-card glass-card">
+                    <div class="param-card-header">
+                        <span class="param-icon">🌪️</span>
+                        <h3>2. Çevre & Rüzgar Fiziği</h3>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="label-wrap">
+                            <span>Yerçekimi İvmesi ($g$):</span>
+                            <span id="txtGrav" class="val-badge">9.81 m/s²</span>
+                        </div>
+                        <input type="range" id="paramGrav" min="1.0" max="15.0" step="0.1" value="9.81">
+                    </div>
+
+                    <div class="control-row">
+                        <div class="label-wrap">
+                            <span>Yan Rüzgar & Fırtına Şiddeti ($F_{wind}$):</span>
+                            <span id="txtWind" class="val-badge">0.0 N</span>
+                        </div>
+                        <input type="range" id="paramWind" min="0" max="30" step="1" value="0">
+                    </div>
+
+                    <div class="control-row">
+                        <div class="label-wrap">
+                            <span>Türbülans / Darbe Frekansı:</span>
+                            <span id="txtGustFreq" class="val-badge">Orta (1.0x)</span>
+                        </div>
+                        <input type="range" id="paramGustFreq" min="0.2" max="3.0" step="0.2" value="1.0">
+                    </div>
+
+                    <div class="control-row">
+                        <div class="label-wrap">
+                            <span>Hava Sürtünme Katsayısı ($C_d$):</span>
+                            <span id="txtDrag" class="val-badge">0.50</span>
+                        </div>
+                        <input type="range" id="paramDrag" min="0.1" max="1.5" step="0.05" value="0.50">
+                    </div>
+                </div>
+
+                <!-- 3. Uydu ve İtici Donanımı -->
+                <div class="param-card glass-card">
+                    <div class="param-card-header">
+                        <span class="param-icon">⚙️</span>
+                        <h3>3. Uydu & İtici Donanımı</h3>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="label-wrap">
+                            <span>Uydu Kütlesi ($m$):</span>
+                            <span id="txtMass" class="val-badge">20.0 kg</span>
+                        </div>
+                        <input type="range" id="paramMass" min="10" max="50" step="1" value="20">
+                    </div>
+
+                    <div class="control-row">
+                        <div class="label-wrap">
+                            <span>Maksimum Ana İtki ($F_{max}$):</span>
+                            <span id="txtThrustMax" class="val-badge">500 N</span>
+                        </div>
+                        <input type="range" id="paramThrustMax" min="200" max="800" step="10" value="500">
+                    </div>
+
+                    <div class="control-row">
+                        <div class="label-wrap">
+                            <span>Maksimum RCS Tork Gücü ($\tau_{max}$):</span>
+                            <span id="txtRcsMax" class="val-badge">60 Nm</span>
+                        </div>
+                        <input type="range" id="paramRcsMax" min="20" max="120" step="5" value="60">
+                    </div>
+
+                    <div class="control-row">
+                        <div class="label-wrap">
+                            <span>İniş Takımı Sönümleme Katsayısı:</span>
+                            <span id="txtLegDamp" class="val-badge">0.85</span>
+                        </div>
+                        <input type="range" id="paramLegDamp" min="0.2" max="1.5" step="0.05" value="0.85">
+                    </div>
+                </div>
+
+                <!-- 4. Sineğin Nörobiyolojisi ve Dopamin Motoru -->
+                <div class="param-card glass-card">
+                    <div class="param-card-header">
+                        <span class="param-icon">🧠</span>
+                        <h3>4. Sinek Modeli & Dopamin</h3>
+                    </div>
+
+                    <div class="control-row">
+                        <label class="custom-select-label" for="paramModelSelect">Aktif Sinek Modeli:</label>
+                        <select id="paramModelSelect" class="custom-select">
+                            <option value="all" selected>👑 Tümünü Karşılaştır (3 Model Eşzamanlı)</option>
+                            <option value="fb">🟢 FlyBody (Kanatlar & Karın - En Hassas)</option>
+                            <option value="ms">🔴 MusculoskeletalFly (15 Hill Kası - Salınımsız)</option>
+                            <option value="nmf">🔵 NeuroMechFly (6 Bacak - Kararlı)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="label-wrap">
+                            <span>Dopamin Öğrenme Katsayısı ($\eta$):</span>
+                            <span id="txtLearnRate" class="val-badge">0.020</span>
+                        </div>
+                        <input type="range" id="paramLearnRate" min="0.005" max="0.08" step="0.005" value="0.02">
+                    </div>
+
+                    <div class="control-row">
+                        <div class="label-wrap">
+                            <span>Yumuşak Temas İkramiyesi ($R_{jackpot}$):</span>
+                            <span id="txtJackpot" class="val-badge">+50 DA</span>
+                        </div>
+                        <input type="range" id="paramJackpot" min="10" max="100" step="5" value="50">
+                    </div>
+
+                    <div class="control-row">
+                        <div class="label-wrap">
+                            <span>Kaza Cezası (Dopamin Çöküşü):</span>
+                            <span id="txtCrashPen" class="val-badge">-50 DA</span>
+                        </div>
+                        <input type="range" id="paramCrashPen" min="-100" max="-10" step="5" value="-50">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Canlı Uçuş Durumu & Canlı 3D Takip Widget'ı -->
+            <div class="live-status-container glass-card">
+                <div class="live-status-left">
+                    <div class="status-banner" id="statusBanner">
+                        <span class="status-indicator live-pulse"></span>
+                        <span id="missionStatusText">✅ MÜKEMMEL DİK İNİŞ BAŞARILDI (Açı Hatası: &lt; 0.1°)</span>
+                    </div>
+
+                    <div class="telemetry-dashboard-grid">
+                        <div class="telem-box">
+                            <span class="telem-label">Son Açı Hatası</span>
+                            <span class="telem-val" id="resAttitudeErr">0.02°</span>
+                            <span class="telem-sub">Hedef: 0.00°</span>
+                        </div>
+                        <div class="telem-box">
+                            <span class="telem-label">İniş Temas Hızı ($V_z$)</span>
+                            <span class="telem-val" id="resTouchdownVz">-0.18 m/s</span>
+                            <span class="telem-sub">Güvenli Sınır &lt; 1.0 m/s</span>
+                        </div>
+                        <div class="telem-box">
+                            <span class="telem-label">Kümülatif Dopamin</span>
+                            <span class="telem-val" id="resTotalDA">+508.7 DA</span>
+                            <span class="telem-sub">Ödül Zirvesi</span>
+                        </div>
+                        <div class="telem-box">
+                            <span class="telem-label">Kontrol Enerjisi</span>
+                            <span class="telem-val" id="resEnergy">198.8 kJ</span>
+                            <span class="telem-sub">Yakıt Tüketimi</span>
+                        </div>
+                        <div class="telem-box">
+                            <span class="telem-label">İniş Süresi</span>
+                            <span class="telem-val" id="resDuration">4.12 s</span>
+                            <span class="telem-sub">Uçuş Zamanı</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="live-status-right">
+                    <div class="sat-3d-scene">
+                        <div class="sat-model-3d" id="liveSat3D">
+                            <div class="sat-hull"></div>
+                            <div class="sat-dome"></div>
+                            <div class="sat-nozzle" id="satNozzle"></div>
+                            <div class="sat-leg leg-l"></div>
+                            <div class="sat-leg leg-r"></div>
+                            <div class="sat-thrust-flame" id="thrustFlame"></div>
+                        </div>
+                    </div>
+                    <div class="live-sat-angle" id="liveAnglesReadout">
+                        Roll: +0.0° | Pitch: 0.0° | Yaw: 0.0°
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- CANLI DİNAMİK GRAFİK MOTORU (REAKTİF GRAFİKLER) -->
+        <!-- ============================================================ -->
+        <section id="live-charts" class="section">
+            <div class="section-header">
+                <span class="section-tag">REAKTİF GRAFİK MOTORU</span>
+                <h2 class="section-title">Anlık Yeniden Hesaplanan Canlı Grafikler</h2>
+                <p class="section-desc">Yukarıdaki parametreleri değiştirdikçe aşağıdaki 3 grafik anlık olarak yeni eğrilerle çizilir.</p>
+            </div>
+
+            <div class="charts-dynamic-grid">
+                <!-- Grafik 1: 3 Eksen Açılarının Canlı Sıfırlanması -->
+                <div class="dynamic-chart-card glass-card">
+                    <div class="chart-header">
+                        <h3>📈 1. Canlı 3-Eksen Açılarının Sıfırlanması (Roll, Pitch, Yaw $\to 0^\circ$)</h3>
+                        <span class="chart-tag">Açı Kilitlenmesi</span>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="chartAttitude"></canvas>
+                    </div>
+                    <p class="chart-footer-note">Kesikli siyah çizgi hedef $0^\circ$ eksenini temsil eder. Eğriler seçili sinek modellerine göre anında güncellenir.</p>
+                </div>
+
+                <!-- Grafik 2: Canlı Dopamin Dinamiği -->
+                <div class="dynamic-chart-card glass-card">
+                    <div class="chart-header">
+                        <h3>⚡ 2. Canlı Dopamin Nörodinamiği (Ödül Tahmini Hatası & Kümülatif DA)</h3>
+                        <span class="chart-tag">Nörolojik Ödül</span>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="chartDopamine"></canvas>
+                    </div>
+                    <p class="chart-footer-note">Açı hatası azaldıkça fazik dopamin patlaması (RPE) artar; dik inişte tepe noktasına ulaşır.</p>
+                </div>
+
+                <!-- Grafik 3: İrtifa ve İniş Hızı Profili -->
+                <div class="dynamic-chart-card glass-card full-width">
+                    <div class="chart-header">
+                        <h3>📉 3. İrtifa ($Z$) ve Dikey Hız ($V_z$) Sönümleme Profili</h3>
+                        <span class="chart-tag">Yumuşak Dokunuş Dinamiği</span>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="chartTrajectory"></canvas>
+                    </div>
+                    <p class="chart-footer-note">Uydunun irtifası sıfıra yaklaşırken hızının güvenli temas sınırına ($-0.1 \sim -1.0\text{ m/s}$) nasıl yumuşatıldığını gösterir.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 3 SİNEK MODELİ KARŞILAŞTIRMASI -->
+        <!-- ============================================================ -->
+        <section id="models" class="section">
+            <div class="section-header">
+                <span class="section-tag">BİYOMEKANİK SİSTEMLER</span>
+                <h2 class="section-title">Karşılaştırılan 3 Sinek Modeli</h2>
+                <p class="section-desc">EPFL ve DeepMind tarafından geliştirilen biyomekanik mimariler.</p>
+            </div>
+
+            <div class="models-grid">
+                <!-- Model 1 -->
+                <div class="model-card active" data-model="nmf">
+                    <div class="model-header">
+                        <span class="model-badge">EPFL NeLy</span>
+                        <h3>1. NeuroMechFly</h3>
+                    </div>
+                    <div class="model-sub">Kinematik 6-Bacak Sistemi</div>
+                    <p class="model-desc">
+                        Tek bir gerçek yetişkin dişi sineğin mikro-BT (micro-CT) taramalarına dayanır. 6 bacağın açısal koordinasyonu ve 
+                        çapraz tripod duruşuyla uydunun sağa/sola devrilmesini engeller.
+                    </p>
+                    <div class="model-specs">
+                        <div class="spec-item"><span>Aktüatör Tipi:</span> <strong>6 Bacak Eklemleri (Coxa/Femur)</strong></div>
+                        <div class="spec-item"><span>Nominal Hata:</span> <strong>0.18°</strong></div>
+                        <div class="spec-item"><span>Rüzgarda Hata:</span> <strong>0.29°</strong></div>
+                        <div class="spec-item"><span>Karakteristik:</span> <strong>Maksimum Zemin Temas Kararlılığı</strong></div>
+                    </div>
+                </div>
+
+                <!-- Model 2 -->
+                <div class="model-card" data-model="fb">
+                    <div class="model-header">
+                        <span class="model-badge">DeepMind & Turaga</span>
+                        <h3>2. FlyBody</h3>
+                    </div>
+                    <div class="model-sub">Aerodinamik Kanat & Karın</div>
+                    <p class="model-desc">
+                        Nature 2025 tüm vücut biyomekanik modeli. Sağ ve sol kanat çırpma genlik farkı ile Roll, kanat eğimi ve karın (abdomen) 
+                        bükülmesi ile Pitch torklarını milisaniyeler içinde düzeltir.
+                    </p>
+                    <div class="model-specs">
+                        <div class="spec-item"><span>Aktüatör Tipi:</span> <strong>Kanatlar + Karın Tendonları</strong></div>
+                        <div class="spec-item"><span>Nominal Hata:</span> <strong>0.02° (En Hassas)</strong></div>
+                        <div class="spec-item"><span>Rüzgarda Hata:</span> <strong>0.12° (En Dayanıklı)</strong></div>
+                        <div class="spec-item"><span>Karakteristik:</span> <strong>Ultra Hızlı Aerodinamik Tepki</strong></div>
+                    </div>
+                </div>
+
+                <!-- Model 3 -->
+                <div class="model-card" data-model="ms">
+                    <div class="model-header">
+                        <span class="model-badge">FlyMimic</span>
+                        <h3>3. MusculoskeletalFly</h3>
+                    </div>
+                    <div class="model-sub">15 Hill-tipi Biyolojik Kas</div>
+                    <p class="model-desc">
+                        Robotik motorlar yerine gerçek biyolojik kas dinamiklerini modelleyen yapı. Karşıt agonist-antagonist kas çiftleri 
+                        sayesinde uydunun havada aşma (overshoot) yapmasını engeller.
+                    </p>
+                    <div class="model-specs">
+                        <div class="spec-item"><span>Aktüatör Tipi:</span> <strong>15 Hill-tipi Biyolojik Kas</strong></div>
+                        <div class="spec-item"><span>Nominal Hata:</span> <strong>0.11°</strong></div>
+                        <div class="spec-item"><span>Rüzgarda Hata:</span> <strong>0.20°</strong></div>
+                        <div class="spec-item"><span>Karakteristik:</span> <strong>Salınımsız Biyolojik Sönümleme</strong></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- BİLİMSEL GRAFİKLER GALERİSİ (8 ŞEKİL) -->
+        <!-- ============================================================ -->
+        <section id="scientific-results" class="section">
+            <div class="section-header">
+                <span class="section-tag">BİLİMSEL YAYIN VERİLERİ</span>
+                <h2 class="section-title">8 Kapsamlı Bilimsel Analiz Grafiği</h2>
+                <p class="section-desc">MuJoCo ve dopamin simülasyonlarından elde edilen tüm yüksek çözünürlüklü analizler. Büyütmek için üzerine tıklayın.</p>
+            </div>
+
+            <div class="charts-gallery">
+                <!-- Şekil 1 -->
+                <div class="chart-item" onclick="openModal('assets/fig1_3axis_attitude_comparison.png', 'Şekil 1: 3 Eksen Açılarının Sıfırlanması (Roll, Pitch, Yaw -> 0°)')">
+                    <div class="chart-img-wrap">
+                        <img src="assets/fig1_3axis_attitude_comparison.png" alt="3 Eksen Açılarının Sıfırlanması">
+                        <div class="zoom-hint">🔍 Büyüt</div>
+                    </div>
+                    <div class="chart-caption">
+                        <h4>Şekil 1: 3 Eksen Açılarının Sıfırlanması</h4>
+                        <p>+12°, -10°, +8° başlayan açıların 3 model tarafından 0° hedefine oturtulması.</p>
+                    </div>
+                </div>
+
+                <!-- Şekil 2 -->
+                <div class="chart-item" onclick="openModal('assets/fig2_dopamine_neurodynamics.png', 'Şekil 2: Dopaminerjik Nörodinamik (RPE, Tonik ve Kümülatif)')">
+                    <div class="chart-img-wrap">
+                        <img src="assets/fig2_dopamine_neurodynamics.png" alt="Dopamin Nörodinamiği">
+                        <div class="zoom-hint">🔍 Büyüt</div>
+                    </div>
+                    <div class="chart-caption">
+                        <h4>Şekil 2: Dopamin Nörodinamiği</h4>
+                        <p>Ödül tahmini hatası (Phasic RPE), bazal tonik dopamin ve kümülatif ödül gelişimi.</p>
+                    </div>
+                </div>
+
+                <!-- Şekil 3 -->
+                <div class="chart-item" onclick="openModal('assets/fig3_phase_space_portraits.png', 'Şekil 3: Faz Uzayı Çekicileri (Phase Space Attractor Portraits)')">
+                    <div class="chart-img-wrap">
+                        <img src="assets/fig3_phase_space_portraits.png" alt="Faz Uzayı Portreleri">
+                        <div class="zoom-hint">🔍 Büyüt</div>
+                    </div>
+                    <div class="chart-caption">
+                        <h4>Şekil 3: Faz Uzayı Çekicileri</h4>
+                        <p>(Açı vs Açısal Hız) durum uzayının (0, 0) kararlı çekici noktasına spiral yakınsaması.</p>
+                    </div>
+                </div>
+
+                <!-- Şekil 4 -->
+                <div class="chart-item" onclick="openModal('assets/fig4_fly_biomechanics_telemetry.png', 'Şekil 4: Sineklerin Biyomekanik Aktüasyon Sinyalleri')">
+                    <div class="chart-img-wrap">
+                        <img src="assets/fig4_fly_biomechanics_telemetry.png" alt="Biyomekanik Aktüasyon Sinyalleri">
+                        <div class="zoom-hint">🔍 Büyüt</div>
+                    </div>
+                    <div class="chart-caption">
+                        <h4>Şekil 4: Biyomekanik Aktüasyon Sinyalleri</h4>
+                        <p>Bacak eklem açıları, kanat genlikleri ve 15 Hill kasının aktivasyon ısı haritası.</p>
+                    </div>
+                </div>
+
+                <!-- Şekil 5 -->
+                <div class="chart-item" onclick="openModal('assets/fig5_comprehensive_benchmark.png', 'Şekil 5: 3 Sinek Modelinin Kapsamlı Karşılaştırmalı Skor Tablosu')">
+                    <div class="chart-img-wrap">
+                        <img src="assets/fig5_comprehensive_benchmark.png" alt="Kapsamlı Skor Tablosu">
+                        <div class="zoom-hint">🔍 Büyüt</div>
+                    </div>
+                    <div class="chart-caption">
+                        <h4>Şekil 5: Model Karşılaştırma Karnesi</h4>
+                        <p>İniş doğruluğu, temas hızı yumuşatması, kazanılan dopamin ve enerji harcaması.</p>
+                    </div>
+                </div>
+
+                <!-- Şekil 6 -->
+                <div class="chart-item" onclick="openModal('assets/fig6_wind_disturbance_response.png', 'Şekil 6: 18N Rüzgar Darbeleri Altında 3 Eksen Tepkisi')">
+                    <div class="chart-img-wrap">
+                        <img src="assets/fig6_wind_disturbance_response.png" alt="Rüzgar Darbeleri Altında 3 Eksen Tepkisi">
+                        <div class="zoom-hint">🔍 Büyüt</div>
+                    </div>
+                    <div class="chart-caption">
+                        <h4>Şekil 6: Rüzgar ve Türbülans Tepkisi</h4>
+                        <p>18 Newton'luk ani yan rüzgar darbelerine karşı sineklerin savrulmayı engellemesi.</p>
+                    </div>
+                </div>
+
+                <!-- Şekil 7 -->
+                <div class="chart-item" onclick="openModal('assets/fig7_3d_descent_trajectories_wind.png', 'Şekil 7: 3D Uzaysal Rota & İniş Pisti Sürüklenme Dispersiyonu')">
+                    <div class="chart-img-wrap">
+                        <img src="assets/fig7_3d_descent_trajectories_wind.png" alt="3D Uçuş Rotası ve Sürüklenme">
+                        <div class="zoom-hint">🔍 Büyüt</div>
+                    </div>
+                    <div class="chart-caption">
+                        <h4>Şekil 7: 3D Rota & İniş Pisti Dispersiyonu</h4>
+                        <p>Rüzgar kuvvetiyle uydunun iniş pisti üzerindeki 3D uçuş rotası ve temas noktaları.</p>
+                    </div>
+                </div>
+
+                <!-- Şekil 8 -->
+                <div class="chart-item" onclick="openModal('assets/fig8_dopamine_stress_recovery.png', 'Şekil 8: Fırtına Esnasında Dopaminerjik Şok ve Refleks Toparlanma')">
+                    <div class="chart-img-wrap">
+                        <img src="assets/fig8_dopamine_stress_recovery.png" alt="Fırtınada Dopamin Toparlanması">
+                        <div class="zoom-hint">🔍 Büyüt</div>
+                    </div>
+                    <div class="chart-caption">
+                        <h4>Şekil 8: Dopamin Şoku ve Stres Toparlanması</h4>
+                        <p>Rüzgar darbesi anında sinek beyninde yaşanan dopamin düşüşü ve refleks toparlanma.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 3'LÜ YAN YANA SPLIT-SCREEN VİDEO OYNATICI -->
+        <!-- ============================================================ -->
+        <section id="simulation-video" class="section">
+            <div class="section-header">
+                <span class="section-tag">EŞZAMANLI DOĞRULAMA</span>
+                <h2 class="section-title">3 Sinek Modelinin Eşzamanlı İniş Kaydı</h2>
+                <p class="section-desc">1x3 Split-Screen: NeuroMechFly (Bacaklar), FlyBody (Kanatlar) ve MusculoskeletalFly (Kaslar) yan yana.</p>
+            </div>
+
+            <div class="video-container glass-card">
+                <div class="video-player-wrapper">
+                    <video controls autoplay loop muted playsinline poster="assets/fig1_3axis_attitude_comparison.png">
+                        <source src="assets/comparison_splitscreen_3flies.mp4" type="video/mp4">
+                        Tarayıcınız video oynatmayı desteklemiyor.
+                    </video>
+                </div>
+                <div class="video-details">
+                    <h3>3 Panelli Split-Screen Nasıl Okunur?</h3>
+                    <div class="hud-guide-item">
+                        <span class="hud-icon">🔵</span>
+                        <div>
+                            <strong>Sol Panel (NeuroMechFly - Bacak Modeli):</strong>
+                            <p>6 bacağını asimetrik açıp toplayarak açıyı düzeltir. Zemin temasında yüksek denge sergiler.</p>
+                        </div>
+                    </div>
+                    <div class="hud-guide-item">
+                        <span class="hud-icon">🟢</span>
+                        <div>
+                            <strong>Orta Panel (FlyBody - Kanat Modeli):</strong>
+                            <p>Kanat çırpma genlik farkı ile Roll açısını en hızlı sıfıra indiren ve en yüksek dopamini toplayan modeldir.</p>
+                        </div>
+                    </div>
+                    <div class="hud-guide-item">
+                        <span class="hud-icon">🔴</span>
+                        <div>
+                            <strong>Sağ Panel (Musculoskeletal - Kas Modeli):</strong>
+                            <p>15 Hill kasının agonist-antagonist sönümlemesiyle uydunun hiç salınım yapmadan pürüzsüzce oturmasını sağlar.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal for Fullscreen Image View -->
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <span class="modal-close">&times;</span>
+        <img class="modal-content" id="modalImg">
+        <div id="modalCaption" class="modal-caption"></div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <div>
+                <h4>Bio-Satellite Lander Interactive Research Lab</h4>
+                <p>EPFL NeuroMechFly & DeepMind FlyGym 2.1 Altyapısı ile Geliştirilmiştir.</p>
+            </div>
+            <div class="footer-links">
+                <span>MuJoCo 3.9 Physics</span> | 
+                <span>Dopaminerjik Pekiştirmeli Öğrenme</span> | 
+                <span>Drosophila melanogaster</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
